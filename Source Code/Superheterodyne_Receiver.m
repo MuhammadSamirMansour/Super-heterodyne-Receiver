@@ -1,7 +1,7 @@
 clear ; clc ; close all
 Specifing the filenames of the audio files
 Audios = ["Short_BBCArabic2.wav", "Short_FM9090.wav", "Short_QuranPalestine.wav", "Short_RussianVoice.wav", "Short_SkyNewsArabia.wav"];                      % names of audio files
-Obtaining maximum length
+%Obtaining maximum length
 % Initialize variables to store maximum length and corresponding filename
 
 max_audio_length = 0;
@@ -19,7 +19,7 @@ for i = 1:length(Audios) % i = 1:5
         max_audio_length = audio_length;
     end
 end
-Padding and Monoizing Audios
+%Padding and Monoizing Audios
 for i = 1 : length(Audios)
     
 % Read the audio file and obtain the audio data
@@ -31,7 +31,7 @@ audio_signal(end + max_audio_length - length(audio_signal)) = 0; % [3]short chan
 
 audiowrite(Audios{i}, audio_signal, Fs);     % save the padded monoized audio signals 
 end
-FFT Of Desired Audio At The Beginning
+%FFT Of Desired Audio At The Beginning
 fprintf("Choose one of these channels:\n1. Short_BBCArabic2\n2. Short_FM9090\n3. Short_QuranPalestine\n4. Short_RussianVoice\n5. Short_SkyNewsArabia\n");
 
 choose_channel = input("Choose channel: "); 
@@ -50,7 +50,7 @@ choose_channel = input("Choose channel: ");
     xlabel("Freq (Hz)")
     ylabel("Magnitude")
     ylim([0 max(abs(AUDIO_SIGNAL))])
-Obtaining BandWidth
+%Obtaining BandWidth
     N = length(AUDIO_SIGNAL);
 
     [pks, freqs] = findpeaks(abs(AUDIO_SIGNAL(1:N/2)), F(1:N/2), 'MinPeakHeight', 0.001*max(abs(AUDIO_SIGNAL(1:N/2)))); % save frequencies and corresponding peaks which achieve the threshold(0.001*max) in two different arrays
@@ -59,7 +59,7 @@ Obtaining BandWidth
     bandwidth = max(freqs) - min(freqs);
 
     disp("bandwidth of " + Audios(choose_channel) + " = " + bandwidth + " Hz"); %[6] BW
-Modulating
+%Modulating
     fo = 100000; 
     n = (choose_channel-1);
     delta_f = 50000;                                    
@@ -98,7 +98,7 @@ Modulating
   
      bandwidth2 = 2*bandwidth;
      disp("bandwidth of " + Audios(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
-FDM Signal Generation
+%FDM Signal Generation
 FDM_Signal = 0;  % Frequency Division Multiplixing 
 
 for i = 1 : length(Audios)
@@ -130,7 +130,7 @@ end
     title("FDM Signal")
     xlabel("Frequency (Hz)")
     ylabel("Magnitude")
-The RF stage
+%The RF stage
 fprintf("Choose:\n0. Normal operation\n1. Remove RF Filter\n2. 0.1kHz Offset\n3. 1kHz Offset\n");
 
 test = input("Choose test: ");
@@ -140,7 +140,7 @@ if test == 0 || 2 || 3
 width = 1.2*bandwidth2;                               %width of the RF filter should be bigger than our signal Bandwidth
 A_stop1 = 60;                                         % Attenuation in the first stopband = 60 dB
 F_stop1 = (choose_channel-1)*50000+100000-27900;      % Edge of the first  stopband = (fn-k) [We choosed maxiumum k that filter can use before interacting with another signal]
-F_pass1 = (choose_channel-1)*50000+100000-0.5*width;  % Edge of the first  passband = fn-0.5*width (decreasing F_pass1 to be closer to F_stop1 will increase filter order and make operation slower but give better result & this is not practical)
+F_pass1 = (choose_channel-1)*50000+100000-0.5*width;  % Edge of the first  passband = fn-0.5*width (decreasing F_pass1 to be closer to F_stop1 will increase filter order and make operation slower but give better result )
 F_pass2 = (choose_channel-1)*50000+100000+0.5*width;  % Edge of the second passband = fn+0.5*width 
 F_stop2 = (choose_channel-1)*50000+100000+27900;      % Edge of the second stopband = (fn+k) making it symmetric is better
 A_stop2 = 60;                                         % Attenuation in the second stopband = 60 dB
@@ -157,7 +157,7 @@ title("After RF Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 end
-Mixer(Oscillator 𝜔𝐶 + 𝜔𝐼f)
+%Mixer(Oscillator 𝜔𝐶 + 𝜔𝐼f)
 fn = (choose_channel-1)*50000+100000;       % [100, 150, 200, 250, 300] KHz
 IF = 25000;                      % If frequency 25 KHz
 fLo = fn + IF;   %Local oscillator carrier frequency
@@ -188,7 +188,7 @@ plot(Frequency_vector*(16*Fs)/length(MIXER_OUTPUT_SIGNAL),abs(MIXER_OUTPUT_SIGNA
 title(" After Mixer ")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
-IF stage
+%IF stage
 width = bandwidth2;                     % the same as signal bandwidth because of its high selectivity
 A_stop1 = 60;                           % Attenuation in the first stopband = 60 dB
 F_stop1 = IF-0.5*width-2000;            % Edge of the first  stopband (2000 is used due to available frequency range limitaion)
@@ -211,7 +211,7 @@ plot(Frequency_vector*(16*Fs)/length(IF_SIGNAL), abs(IF_SIGNAL))
 title("After IF Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
-Base Band Stage (Demodulation)
+%Base Band Stage (Demodulation)
 fc = IF;      % BaseBand carrier frequency
 
 audio_length = (1:1:length(IF_Signal))';
@@ -225,7 +225,7 @@ plot(Frequency_vector*(16*Fs)/length(BASE_BAND_SIGNAL),abs(BASE_BAND_SIGNAL))
 title("Demodulator of Base Band Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
-The Base Band detection (LPF) 
+%The Base Band detection (LPF) 
 width = bandwidth2;
 F_stop = width;              % Edge of the stopband ( we have good available range of frequencies to increase F_stop )
 F_pass = width/2;            % Edge of the passband (original bandwidth of the signal)
