@@ -229,8 +229,8 @@ ylabel("Magnitude")
 width = bandwidth2;
 F_stop = width;              % Edge of the stopband ( we have good available range of frequencies to increase F_stop )
 F_pass = width/2;            % Edge of the passband (original bandwidth of the signal)
-A_stop = 60;                 % Attenuation in the second stopband = 60 dB
-A_pass = 1;                  % Amount of ripple allowed in the passband = 1 dB
+A_stop = 60;                 % Attenuation in stopband
+A_pass = 1;                  % Amount of ripple allowed in the passband
 
 Base_Band_Filter= fdesign.lowpass(F_pass, F_stop, A_pass, A_stop, (16*Fs));
 Base_Band_Filter = design(Base_Band_Filter, 'butter'); % provide a maximally flat frequency response in the passband, which means they attenuate frequencies uniformly across the passband without any ripples
