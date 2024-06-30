@@ -5,7 +5,7 @@
     will be simulated using radio-station generated signals.
 
 > ## __Run Program__
-   * by running code, user required to choose which station he want to hear & asked if he want to do one of this tests (remove RF stage - 0.1K hz offset - 1k hz offset )
+   * by running code, user required to choose which station he want to hear & asked if he wants to do one of this tests (remove RF stage - 0.1K hz offset - 1k hz offset )
 
 > ## _appreciation_
 thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first place for their code
