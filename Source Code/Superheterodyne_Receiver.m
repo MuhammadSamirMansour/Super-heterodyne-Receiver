@@ -137,12 +137,12 @@ fprintf("Choose:\n0. Normal operation\n1. Remove RF Filter\n2. 0.1kHz Offset\n3.
 
 test = input("Choose test: ");
     
-if test == 0 || 2 || 3
-    
-width = 1.2*bandwidth2;                               %width of the RF filter should be bigger than our signal Bandwidth
+if test ~= 1
+
+width = 1.2*bandwidth2;                               %width of the RF filter should be bigger than our signal Bandwidth ( no precision for this filter paramerters because it works at very high frequncy )
 A_stop1 = 60;                                         % Attenuation in the first stopband = 60 dB
 F_stop1 = (choose_channel-1)*50000+100000-27900;      % Edge of the first  stopband = (fn-k) [We choosed maxiumum k that filter can use before interacting with another signal]
-F_pass1 = (choose_channel-1)*50000+100000-0.5*width;  % Edge of the first  passband = fn-0.5*width (decreasing F_pass1 to be closer to F_stop1 will increase filter order and make operation slower but give better result )
+F_pass1 = (choose_channel-1)*50000+100000-0.5*width;  % Edge of the first  passband = fn-0.5*width (decreasing F_pass1 to be closer to F_stop1 will increase filter order and make operation slower but give better result { not practical } )
 F_pass2 = (choose_channel-1)*50000+100000+0.5*width;  % Edge of the second passband = fn+0.5*width 
 F_stop2 = (choose_channel-1)*50000+100000+27900;      % Edge of the second stopband = (fn+k) making it symmetric is better
 A_stop2 = 60;                                         % Attenuation in the second stopband = 60 dB
@@ -171,9 +171,6 @@ fLo = fLo + 100;   % 0.1k offset
 
 elseif test == 3
 fLo = fLo + 1000;  % 1k offset
-
-else
-fLo = fn + IF;
 end       
 
 audio_length = (1:1:length(RF_Signal))';
@@ -193,7 +190,7 @@ ylabel("Magnitude")
 %IF stage
 width = bandwidth2;                     % the same as signal bandwidth because of its high selectivity
 A_stop1 = 60;                           % Attenuation in the first stopband = 60 dB
-F_stop1 = IF-0.5*width-2000;            % Edge of the first  stopband (2000 is used due to available frequency range limitaion)
+F_stop1 = IF-0.5*width-2000;            % Edge of the first  stopband (2000 is used as this filter is high selective and also there is no more available frequency range to increase, and decreasing make operation  much slower due to higher filter order be generated )
 F_pass1 = IF-0.5*width;                 % Edge of the first  passband
 F_pass2 = IF+0.5*width;                 % Edge of the second passband
 F_stop2 = IF+0.5*width+2000;            % Edge of the second stopband
@@ -229,7 +226,7 @@ xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 %The Base Band detection (LPF) 
 width = bandwidth2;
-F_stop = width;              % Edge of the stopband ( we have good available range of frequencies to increase F_stop )
+F_stop = width;              % Edge of the stopband ( we have good available range of frequencies to increase F_stop so F_stop = 2 * F_pass is good enough)
 F_pass = width/2;            % Edge of the passband (original bandwidth of the signal)
 A_stop = 60;                 % Attenuation in stopband
 A_pass = 1;                  % Amount of ripple allowed in the passband
@@ -245,7 +242,7 @@ title("After Base Band Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 
-     Base_Band_Signal = 4*16*resample(Base_Band_Signal, 1, 16); %% restore main Fs & length by doing the opposite the interp do & multiplied by 16 because it divides magnitude by 16 and we multiplied by another 4 due to two modulation processses
+     Base_Band_Signal = 4*16*resample(Base_Band_Signal, 1, 16); %% restore main Fs & length by doing the opposite the interp do & multiplied by 16 because it divides magnitude by 16 and multiplied by another 4 due to two modulation processses
      
  
      BASE_BAND_SIGNAL  = fftshift(fft(Base_Band_Signal));
@@ -261,12 +258,10 @@ ylabel("Magnitude")
      
 sound(Base_Band_Signal, Fs)  % to listen to our station
 
- % --------------------testing different actions to sound-----------------------------
+ % --------------------saving different tests to sound-----------------------------
 
 errors = ["Removed_RF.wav", "0.1 KHz Offset.wav", "1 KHz Offset.wav"];% three tests
-if test == 0
-
-else 
+if test ~= 0
 audiowrite(errors{test}, Base_Band_Signal, Fs);   % save test audios, Test{1} Test{2} Test{3}
 end
 
