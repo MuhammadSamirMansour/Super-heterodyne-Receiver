@@ -2,7 +2,7 @@ clear ; clc ; close all
 Specifing the filenames of the audio files
 Audios = ["Short_BBCArabic2.wav", "Short_FM9090.wav", "Short_QuranPalestine.wav", "Short_RussianVoice.wav", "Short_SkyNewsArabia.wav"];                      % names of audio files
 %Obtaining maximum length
-% Initialize variables to store maximum length and corresponding filename
+% Initialize a variable to store maximum length
 
 max_audio_length = 0;
 
