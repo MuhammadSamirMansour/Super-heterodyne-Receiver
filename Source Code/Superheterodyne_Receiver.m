@@ -1,5 +1,5 @@
 clear ; clc ; close all
-Specifing the filenames of the audio files
+%Specifing the filenames of the audio files
 Audios = ["Short_BBCArabic2.wav", "Short_FM9090.wav", "Short_QuranPalestine.wav", "Short_RussianVoice.wav", "Short_SkyNewsArabia.wav"];                      % names of audio files
 %Obtaining maximum length
 % Initialize a variable to store maximum length
@@ -65,17 +65,19 @@ choose_channel = input("Choose channel: ");
     delta_f = 50000;                                    
     fn = fo + n*delta_f;
     
-%Fs = 44.1k hz and Fmax(highest freq we reach in whole code) = 2fn(Signal(5))+IF + Bandwidth of signal 5 = 625k +9.11k = 634.11k hz 
+%Fs = 44.1 khz
 
-%Folding frequencies happens when we reach frequency exceeds Fs/2 and frequencies above that will fold back to lower frequencies
+%Fmax >> ( highest freq we reach in whole code which appear after second modulation on the farthest signal {signal 5} ) = 2*fn(Signal(5)) + IF + Bandwidth of signal 5 = 625k +9.11k = 634.11k hz 
 
-%aliasing happens when folded back frequencies start to interfernce with our signal which centered at 25k hz (after mixer) so we need to increase sampling frequency by multipling Fs by a factor (x) to avoid this 
+%Folding frequencies happens when we reach frequency exceeds Fs/2 and frequencies above that will fold back to lower frequencies.
 
-%F(aliasing) = sampling Freq - Fmax = (x*Fs) - Fmax "should be bigger than 25k + bandwidth of signal 5"
+%aliasing happens when folded back frequencies start to interfernce with our signal which centered at 25k hz ( after mixer ) so we need to increase sampling frequency by multipling Fs by a factor (x) to avoid this 
+
+%F(aliasing) = sampling Freq - Fmax = (x*Fs) - Fmax "should be bigger than 25k + bandwidth of signal 5" ( This equation was concluded from the above data )
 
 %  x*44.1k - 634.11k > 34.11k  
 
-% x > 15.15 SO -------- x = 16
+% x > 15.15 >>>> x = 16
 
     audio_signal = (1/16)*interp(audio_signal, 16); %[8] Fs(new)= 16*Fs & length(new) = 16*length & magnitude(new)=16*magnitude so we divided by 16 to not change magnitude
                  
