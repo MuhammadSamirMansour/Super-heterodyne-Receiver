@@ -39,6 +39,7 @@ choose_channel = input("Choose channel: ");
     [audio_signal, Fs] = audioread(Audios(choose_channel));  % Read audio and get sampling frequency
     
     Fs  % [1] display sampling freq to use in hand calculations
+    %Fs = 44.1 khz
     
     AUDIO_SIGNAL = fftshift(fft(audio_signal, length(audio_signal))); %% to be symmetric around 0 (has mathmatical meaning)
     Frequency_vector = (-length(AUDIO_SIGNAL)/2 : length(AUDIO_SIGNAL)/2 - 1)'; % adjust frequency axis (we converted it from row to column by (') because we next will divide it by the AUDIO_SIGNAL array which is a column array and dividing amd multiplying must be in same type)
@@ -64,8 +65,6 @@ choose_channel = input("Choose channel: ");
     n = (choose_channel-1);
     delta_f = 50000;                                    
     fn = fo + n*delta_f;
-    
-%Fs = 44.1 khz
 
 %Fmax >> ( highest freq we reach in whole code which appear after second modulation on the farthest signal {signal 5} ) = 2*fn(Signal(5)) + IF + Bandwidth of signal 5 = 625k +9.11k = 634.11k hz 
 
