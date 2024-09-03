@@ -76,7 +76,7 @@ for i = 1:length(Audios)
     n = (i-1);
     delta_f = 50000;                                    
     fn = fo + n*delta_f;
-                                           %----------------------------------- Hand Calculations ( can be automated ) -----------------------------------%
+    %----------->>>>>----------- Hand Calculations ( can be automated ) -----------<<<<<-----------%
 
     %Fmax >> ( highest freq we reach in whole code which appear after second modulation on the farthest signal {signal 5} ) = 2*fn(Signal(5)) + IF + Bandwidth of signal 5 = 625k +9.11k = 634.11k hz 
 
