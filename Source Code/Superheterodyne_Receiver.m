@@ -44,7 +44,7 @@ choose_channel = input("Choose channel: ");
     AUDIO_SIGNAL = fftshift(fft(audio_signal, length(audio_signal))); %% to be symmetric around 0 (has mathmatical meaning)
     Frequency_vector = (-length(AUDIO_SIGNAL)/2 : length(AUDIO_SIGNAL)/2 - 1)'; % adjust frequency axis (we converted it from row to column by (') because we next will divide it by the AUDIO_SIGNAL array which is a column array and dividing amd multiplying must be in same type)
     
-    F= Frequency_vector*Fs/length(AUDIO_SIGNAL); % [4]Freq axis ( freq limits [-Fs/2 ---> Fs/2]  exceeding this range will cause frequencies to fold back )
+    F= Frequency_vector*Fs/length(AUDIO_SIGNAL); % [4]Freq axis ( freq limits [-Fs/2 ---> Fs/2]  exceeding this range will lead frequencies to fold back )
     
     plot(F, abs(AUDIO_SIGNAL)) % [5] plotting FFT 
     title(Audios(choose_channel) + " FFT")
