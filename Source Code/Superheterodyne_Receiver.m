@@ -1,15 +1,15 @@
 clear; clc; close all;
 % Specifying the filenames of the audio files
-Audios = ["Short_BBCArabic2.wav", "Short_FM9090.wav", "Short_QuranPalestine.wav", "Short_RussianVoice.wav", "Short_SkyNewsArabia.wav"]; % names of audio files
+transmitter_Signals = ["Short_BBCArabic2.wav", "Short_FM9090.wav", "Short_QuranPalestine.wav", "Short_RussianVoice.wav", "Short_SkyNewsArabia.wav"]; % names of audio files
 % Obtaining maximum length
 % Initialize a variable to store maximum length
 
 max_audio_length = 0;
 
 % Loop through each audio
-for i = 1:length(Audios) % i = 1:5
+for i = 1:length(transmitter_Signals) % i = 1:5
     % Read the audio file and obtain the audio data
-    audio_signal = audioread(Audios{i});
+    audio_signal = audioread(transmitter_Signals{i});
     
     % Calculate the length of the audio file (total number of samples)
     audio_length = size(audio_signal, 1); % '1' refers to one channel( one column )
@@ -21,15 +21,15 @@ for i = 1:length(Audios) % i = 1:5
 end
 
 % Padding and Monoizing Audios
-for i = 1:length(Audios)
+for i = 1:length(transmitter_Signals)
     % Read the audio file and obtain the audio data
-    [audio_signal, Fs] = audioread(Audios{i}); % getting audio data and sampling frequency
+    [audio_signal, Fs] = audioread(transmitter_Signals{i}); % getting audio data and sampling frequency
     audio_signal = sum(audio_signal, 2) / size(audio_signal, 2); % [2]Convert from stereo to mono ( The sum function adds the two channels & The size function determines the number of channels)
 
     % Padding short signals 
     audio_signal(end + max_audio_length - length(audio_signal)) = 0; % [3]short channels will be padded with zeros at the last remaining samples of its length after subtracting from maximum length
     
-    audiowrite(Audios{i}, audio_signal, Fs); % save the padded monoized audio signals 
+    audiowrite(transmitter_Signals{i}, audio_signal, Fs); % save the padded monoized audio signals 
 end
 
 % FFT Of Desired Audio At The Beginning
@@ -37,10 +37,10 @@ fprintf("Choose one of these channels:\n1. Short_BBCArabic2\n2. Short_FM9090\n3.
 
 choose_channel = input("Choose channel: "); 
 
-for i = 1:length(Audios)
-    [audio_signal, Fs] = audioread(Audios(i)); % Read audio and get sampling frequency
+for i = 1:length(transmitter_Signals)
+    [audio_signal, Fs] = audioread(transmitter_Signals(i)); % Read audio and get sampling frequency
     
-    disp("sampling frequency of " + Audios(i) + " = " + Fs + " Hz"); % [1] display sampling freq
+    disp("sampling frequency of " + transmitter_Signals(i) + " = " + Fs + " Hz"); % [1] display sampling freq
     %Fs = 44.1 khz
     AUDIO_SIGNAL = fftshift(fft(audio_signal, length(audio_signal))); % to be symmetric around 0 (this way give mathmatical meaning)
     Frequency_vector = (-length(AUDIO_SIGNAL)/2 : length(AUDIO_SIGNAL)/2 - 1)'; % adjust frequency axis (we converted it from row to column by (') because we next will divide it by the AUDIO_SIGNAL array which is a column array and dividing amd multiplying must be in same type)
@@ -50,7 +50,7 @@ for i = 1:length(Audios)
 
     if i == choose_channel
         plot(F, abs(AUDIO_SIGNAL)) % [5] plotting FFT
-        title(Audios(choose_channel) + " FFT")
+        title(transmitter_Signals(choose_channel) + " FFT")
         xlabel("Freq (Hz)")
         ylabel("Magnitude")
         ylim([0 max(abs(AUDIO_SIGNAL))])
@@ -62,12 +62,12 @@ for i = 1:length(Audios)
 
     % Compute bandwidth
     bandwidth = max(freqs) - min(freqs);
-    disp("bandwidth of " + Audios(i) + " = " + bandwidth + " Hz");  %[6] BW
+    disp("bandwidth of " + transmitter_Signals(i) + " = " + bandwidth + " Hz");  %[6] BW
 
     if i == choose_channel
         BW_Of_chosen_Signal = bandwidth;
     end
-    %if i == length(Audios)
+    %if i == length(transmitter_Signals)
         %BW_Of_last_Signal = bandwidth;
     %end
 
@@ -92,7 +92,7 @@ for i = 1:length(Audios)
 
     %%Automated :_ (from the above concluded equation)
 
-               % x = ( 2/Fs ) * ( fo + length(Audios) * delta_f + IF{25khz} + BW_Of_last_Signal );
+               % x = ( 2/Fs ) * ( fo + length(transmitter_Signals) * delta_f + IF{25khz} + BW_Of_last_Signal );
                % x = ceil(x);  % Round x up to the nearest greater integer
 
     audio_signal = (1/16)*interp(audio_signal, 16); %[8] Fs(new)= 16*Fs & length(new) = 16*length & magnitude(new) = 16*magnitude so we divided by 16 to not change magnitude
@@ -105,7 +105,7 @@ for i = 1:length(Audios)
 
     if i == choose_channel
         plot(Frequency_vector*(16*Fs)/length(MODULATED_SIGNAL), abs(MODULATED_SIGNAL))    
-        title(Audios(choose_channel) + " Modulated")
+        title(transmitter_Signals(choose_channel) + " Modulated")
         xlabel("Freq (Hz)")
         ylabel("Magnitude")
         xlim([-1.5*fn 1.5*fn])
@@ -113,14 +113,14 @@ for i = 1:length(Audios)
     end
 
     bandwidth2 = 2 * BW_Of_chosen_Signal;
-    disp("bandwidth of " + Audios(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
+    disp("bandwidth of " + transmitter_Signals(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
 end
 % FDM Signal Generation
 FDM_Signal = 0; % Frequency Division Multiplexing 
 
-for i = 1:length(Audios)
+for i = 1:length(transmitter_Signals)
     % Read the audio file and obtain the audio data
-    [audio_signal, Fs] = audioread(Audios(i)); % Read audio and get sampling frequency
+    [audio_signal, Fs] = audioread(transmitter_Signals(i)); % Read audio and get sampling frequency
     audio_signal = (1/16)*interp(audio_signal, 16); %
     
     fo = 100000;
@@ -263,9 +263,13 @@ ylim([0 max(abs(BASE_BAND_SIGNAL))])
 
 sound(Base_Band_Signal, Fs) % to listen to our station
 
-% --------------------saving different tests to sound-----------------------------
+% --------------------saving received signals & different tests-----------------------------
 
 errors = ["Removed_RF.wav", "0.1 KHz Offset.wav", "1 KHz Offset.wav"]; % three tests
-if test ~= 0
+receiver = ["receiver_BBCArabic2.wav", "receiver_FM9090.wav", "receiver_QuranPalestine.wav", "receiver_RussianVoice.wav", "receiver_SkyNewsArabia.wav"];
+
+if test == 1 || test == 2 || test == 3
     audiowrite(errors{test}, Base_Band_Signal, Fs); % save test audios, Test{1} Test{2} Test{3}
+else
+    audiowrite(receiver{choose_channel}, Base_Band_Signal, Fs);
 end
