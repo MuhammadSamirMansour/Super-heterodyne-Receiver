@@ -66,6 +66,8 @@ choose_channel = input("Choose channel: ");
     delta_f = 50000;                                    
     fn = fo + n*delta_f;
 
+%----------------------------------- Hand Calculations ( can be automated ) -----------------------------------%
+
 %Fmax >> ( highest freq we reach in whole code which appear after second modulation on the farthest signal {signal 5} ) = 2*fn(Signal(5)) + IF + Bandwidth of signal 5 = 625k +9.11k = 634.11k hz 
 
 %Folding frequencies happens when we reach frequency exceeds Fs/2 and frequencies above that will fold back to lower frequencies.
