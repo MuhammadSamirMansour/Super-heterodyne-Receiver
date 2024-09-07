@@ -8,7 +8,7 @@
    * by running code, user required to choose which station he wants to hear & asked if he wants to do one of this tests (remove RF stage - 0.1K hz offset - 1k hz offset )
 
 > ## _appreciation_
-thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first place for their code that helped me in first plae to understand the project.
+thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first place for their code that helped me much in some parts.
 
 their project :  https://github.com/0marAmr/Super-heterodyne-Receiver/tree/master
 
