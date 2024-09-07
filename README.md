@@ -12,5 +12,5 @@ thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first pl
 
 their project :  https://github.com/0marAmr/Super-heterodyne-Receiver/tree/master
 
-But this is extremely changed code : new functions added, many concepts clarified and many issues fixed.
+my code is extremely changed : new functions added, many concepts clarified and many issues fixed.
 
