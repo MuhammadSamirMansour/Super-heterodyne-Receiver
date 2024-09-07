@@ -4,7 +4,7 @@ transmitter_Audios = ["Short_BBCArabic2.wav", "Short_FM9090.wav", "Short_QuranPa
 
 % Initialize variables used to store sums values or variables that may not store any values in the code.
 max_audio_length = 0;
-band_widths = cell(1, length(transmitter_Audios));  % Preallocate a cell array to hold the signals' bandwidth values.
+band_widths = cell(1, length(transmitter_Audios));  % Preallocate a cell array to hold the bandwidths' values of the signals.
 BW_Of_chosen_Signal = 0;
 BW_Of_last_Signal = 0;
 current_sum = 0;
@@ -56,14 +56,14 @@ for i = 1:length(transmitter_Audios)
         F = Frequency_vector*Fs/length(AUDIO_SIGNAL); % [4]Freq axis
         % freq limits [-Fs/2 ---> Fs/2]  exceeding this range will lead higher frequencies to fold back 
 
-        plot(F, abs(AUDIO_SIGNAL)) % [5] plotting FFT
+        plot(F, abs(AUDIO_SIGNAL), 'Color', [1, 0.84, 0]) % [5] plotting FFT
         title(transmitter_Audios(choose_channel) + " FFT")
         xlabel("Freq (Hz)")
         ylabel("Magnitude")
         ylim([0 max(abs(AUDIO_SIGNAL))])
         
         disp("sampling frequency for all audios = " + Fs + " Hz"); % [1] display sampling freq
-        disp("audio_signal = " + max(abs(audio_signal)));
+        disp("audio_signal Amplitude = " + max(abs(audio_signal)));
     
         %Fs = 44.1 khz
     end
@@ -76,7 +76,7 @@ for i = 1:length(transmitter_Audios)
     
     F = Frequency_vector*Fs/length(AUDIO_SIGNAL);
     
-    % Obtaining BandWidth
+    % Obtaining BandWidths
     N = length(AUDIO_SIGNAL);
     [pks, freqs] = findpeaks(abs(AUDIO_SIGNAL(1:N/2)), F(1:N/2), 'MinPeakHeight', 0.001*max(abs(AUDIO_SIGNAL(1:N/2)))); % save frequencies and corresponding peaks which achieve the threshold(0.001*max) in two different arrays
 
@@ -106,9 +106,9 @@ for i = choose_channel-1:choose_channel
         end
     end
 end
-k0 = BW_Of_chosen_Signal + (50000 - max_sum); % the maximum available frequency range for RF filter to use between two modulated consecutive signals
+k0 = BW_Of_chosen_Signal + (50000 - max_sum); % the maximum available frequency range for RF filter to use before including another signal.
 
-k1 = IF; % The largest available frequency range for the IF filter to use without exceeding 0 Hz
+k1 = IF; % The maximum available frequency range for the IF filter to use before exceeding 0 Hz
 
 % Modulating
 [audio_signal, Fs] = audioread(transmitter_Audios(choose_channel));
@@ -119,11 +119,11 @@ fn_chosen = fo + n*delta_f;
 
 %----------->>>>>----------- Hand Calculations for Violation_1( better to be automated ) -----------<<<<<-----------%
 
-% Fmax1 >> highest freq we reach in whole code in case of Violation_1 > Violation_2, it appears after FDM Signal Generated) = fn(of last signal) + BW_Of_last_Signal + k0.
+% Fmax1 >> highest freq we reach in whole code in case of ( Violation_1 > Violation_2 ), it appears after FDM Signal Generated = fn(of last signal) + k0.
 
-% Fs/2 should be bigger than Fmax1 to avoid exceeding Nyquist criteria so we need to increase sampling frequency by multipling Fs by a factor x (Violation_1) to avoid this
+% Fs/2 should be bigger than Fmax1 to avoid violating Nyquist criteria so we need to increase sampling frequency by multipling Fs by a factor x (Violation_1) to avoid this.
 
-% x*(Fs/2) > Fmax1 + 1000 %% 1000 as a safe factor
+% new FS = x*(Fs/2) > ( Fmax1 + 1000 ) %% 1000 as a safe factor
 
 % x(violation_1) > (2/Fs)*( fmax1 + 1000)
 
@@ -131,9 +131,9 @@ fn_chosen = fo + n*delta_f;
 
 %----------->>>>>----------- Hand Calculations for Violation_2( better to be automated ) -----------<<<<<-----------%
 
-% Fmax2 >> highest freq we reach in whole code in case of Violation_2 > Violation_1, it appears after the second modulation after mixer) = 2*fn(of chosen_signal) + IF + BW_Of_chosen_Signal
+% Fmax2 >> highest freq we reach in whole code in case of ( Violation_2 > Violation_1 ), it appears after the second modulation process of mixer = 2*fn(of chosen_signal) + IF + BW_Of_chosen_Signal
 
-% Fs/2 should be bigger than Fmax2 to avoid exceeding Nyquist criteria so we need to increase sampling frequency by multipling Fs by a factor x (Violation_2) to avoid this
+% Fs/2 should be bigger than Fmax2 to avoid violating Nyquist criteria so we need to increase sampling frequency by multipling Fs by a factor x (Violation_2) to avoid this
 
 % x*(Fs/2) > Fmax2
 
@@ -147,7 +147,7 @@ fn_chosen = fo + n*delta_f;
 
 % Folding frequencies happens when we reach frequency exceeds Fs/2 and frequencies above that will fold back to lower frequencies.
 
-% aliasing happens when folded back frequencies start to interfernce with our signal which centered at IF(25k hz) ( after mixer ) so we need to increase sampling frequency by multipling Fs by a factor x (Violation_3) to avoid this 
+% aliasing happens when folded back frequencies start to interfernce with our signal which is centered at IF(25k hz) ( after mixer ) so we need to increase sampling frequency by multipling Fs by a factor x (Violation_3) to avoid this aliasing.
 
 % F(aliasing) = sampling Freq - Fmax2 = (x*Fs) - Fmax2 "should be bigger than IF + k1 + 1000" ( This equation was concluded from the above data )
 
@@ -169,7 +169,7 @@ violation_3 = (1/Fs)*( fmax2 + IF + k1 + 1000); % minimum factor to avoid aliasi
 if violation_1 >= violation_2
     x = violation_1;                                                                                       
 elseif violation_1 >= violation_3
-    x = violation_1; % it is more safe and practical that if violation_2 > violation_1 is to make (x = violation_2) directly without further conditions to not violate Nyquist criteria at all but as this is simulation and not to make process slow, we use lower suitable factor (theoretically).
+    x = violation_1; % it is better that if violation_2 > violation_1 is to make (x = violation_2) directly without further conditions to not violate Nyquist criteria at all but to not increase filter order and not to make process slow, we use lower suitable factor.
 else
     x = violation_3;
 end
@@ -179,7 +179,7 @@ disp("violation_2 = " + num2str(violation_2));
 disp("violation_3 = " + num2str(violation_3));
 disp("x = " + num2str(x));
 
-audio_signal = interp(audio_signal, x); %[8] Fs(new)= x*Fs & length(new) = x*length & magnitude(new) = x*magnitude so we divided by x to not change magnitude
+audio_signal = interp(audio_signal, x); %[8] Fs(new)= x*Fs & length(new) = x*length & magnitude(new) = x*magnitude
 audio_length = (1:1:length(audio_signal))'; % adjusted to be the same length as our signal
 carrier_signal = cos(2*pi*fn_chosen*audio_length*(1/(x*Fs))); % [7] carrier signal cos(𝜔𝑛𝑛𝑇𝑆)
 
@@ -187,16 +187,15 @@ modulated_signal = carrier_signal.*audio_signal; % we use (.*) when multiplying 
 MODULATED_SIGNAL = fftshift(fft(modulated_signal));
 Frequency_vector = (-length(MODULATED_SIGNAL)/2:1:length(MODULATED_SIGNAL)/2-1)';
 
-plot(Frequency_vector*(x*Fs)/length(MODULATED_SIGNAL), abs(MODULATED_SIGNAL))    
+plot(Frequency_vector*(x*Fs)/length(MODULATED_SIGNAL), abs(MODULATED_SIGNAL), 'Color', [0.6, 0.4, 0.1])    
 title(transmitter_Audios(choose_channel) + " Modulated")
 xlabel("Freq (Hz)")
 ylabel("Magnitude")
-xlim([-1.5*fn_chosen 1.5*fn_chosen])
 ylim([0 max(abs(MODULATED_SIGNAL))])
     
 bandwidth2 = 2 * BW_Of_chosen_Signal;
 disp("bandwidth of " + transmitter_Audios(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
-disp("modulated_signal = " + max(abs(modulated_signal)));
+disp("modulated_signal Amplitude = " + max(abs(modulated_signal)));
 
 % FDM Signal Generation
 for i = 1:length(transmitter_Audios)
@@ -217,10 +216,11 @@ for i = 1:length(transmitter_Audios)
 end
 FDM_SIGNAL = fftshift(fft(FDM_Signal));
 Frequency_vector = (-length(FDM_SIGNAL)/2:length(FDM_SIGNAL)/2-1)';
-plot(Frequency_vector*(x*Fs)/length(FDM_SIGNAL), abs(FDM_SIGNAL))
+plot(Frequency_vector*(x*Fs)/length(FDM_SIGNAL), abs(FDM_SIGNAL), 'r')
 title("FDM Signal")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
+ylim([0 max(abs(FDM_SIGNAL))])
 
 % The RF stage
 fprintf("Choose:\n0. Normal operation\n1. Remove RF Filter\n2. 0.1kHz Offset\n3. 1kHz Offset\n");
@@ -232,28 +232,29 @@ test = input("0. Normal operation\n1. Remove RF Filter\n2. 0.1kHz Offset\n3. 1kH
 
 if test ~= 1
     A_stop1 = 60; % Attenuation in the first stopband = 60 dB
-    F_pass1 = fn_chosen - 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the first  passband = fn-0.5*width
-    F_pass2 = fn_chosen + 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the second passband = fn+0.5*width 
-    F_stop1 = fn_chosen - k_RF;                  % Edge of the first  stopband = (fn-k_RF) [We choosed high k value that filter can use before interacting with another signal as it is not high selective filter and not practical to decrease k]   
+    F_pass1 = fn_chosen - 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the first  passband, just suitable equation
+    F_pass2 = fn_chosen + 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the second passband 
+    F_stop1 = fn_chosen - k_RF;                  % Edge of the first  stopband = (fn-k_RF) 
     F_stop2 = fn_chosen + k_RF;                  % Edge of the second stopband = (fn+k_RF) making it symmetric is better
     A_stop2 = 60;                           % Attenuation in the second stopband = 60 dB
     A_pass = 1;   % Amount of ripple allowed in the passband
 
     RF_Filter = fdesign.bandpass(F_stop1, F_pass1, F_pass2, F_stop2, A_stop1, A_pass, A_stop2, (x*Fs));
-    RF_Filter = design(RF_Filter, 'kaiserwin'); % equiripple is good in dealing with ripples espicially in bandpass filter 
-    [b, a] = tf(RF_Filter);
-    RF_Signal = filtfilt(b, a, FDM_Signal);
-    %RF_Signal = filter(RF_Filter, FDM_Signal);
+    RF_Filter = design(RF_Filter, 'kaiserwin'); % kaiserwin is good as it adjusts the attenuation or ripple depending on your filter parameters. 
+    [b, a] = tf(RF_Filter); % this extracts the coefficients of the transfer function of our filter for filtfilt method.
+    RF_Signal = filtfilt(b, a, FDM_Signal); % filtfilt is a filtering method that reomve phase destortion.
+    %RF_Signal = filter(RF_Filter, FDM_Signal); % may be filter method is more practical for RF filter as it has much less precision due to working at very high frequencies.
     
     RF_SIGNAL  = fftshift(fft(RF_Signal));
     Frequency_vector = (-length(RF_SIGNAL)/2:1:length(RF_SIGNAL)/2-1)';
 
-    plot(Frequency_vector*(x*Fs)/length(RF_SIGNAL), abs(RF_SIGNAL))
+    plot(Frequency_vector*(x*Fs)/length(RF_SIGNAL), abs(RF_SIGNAL), 'r')
     title("After RF Stage")
     xlabel("Frequency (Hz)")
     ylabel("Magnitude")
+    ylim([0 max(abs(RF_SIGNAL))])
 
-    disp("RF_Signal = " + max(abs(RF_Signal)));
+    disp("RF_Signal Amplitude = " + max(abs(RF_Signal)));
 end
 
 % Mixer (Oscillator 𝜔𝐶 + 𝜔𝐼f)
@@ -275,12 +276,13 @@ Mixer_Output_Signal = RF_Signal.*carrier_signal;
 MIXER_OUTPUT_SIGNAL = fftshift(fft(Mixer_Output_Signal));
 Frequency_vector = (-length(MIXER_OUTPUT_SIGNAL)/2:1:length(MIXER_OUTPUT_SIGNAL)/2-1)';
 
-plot(Frequency_vector*(x*Fs)/length(MIXER_OUTPUT_SIGNAL), abs(MIXER_OUTPUT_SIGNAL))
+plot(Frequency_vector*(x*Fs)/length(MIXER_OUTPUT_SIGNAL), abs(MIXER_OUTPUT_SIGNAL), 'Color', [1, 0.65, 0])
 title(" After Mixer ")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
+ylim([0 max(abs(MIXER_OUTPUT_SIGNAL))])
 
-disp("Mixer_Output_Signal = " + max(abs(Mixer_Output_Signal)));
+disp("Mixer_Output_Signal Amplitude = " + max(abs(Mixer_Output_Signal)));
 
 % IF stage
 
@@ -288,9 +290,9 @@ k_IF = k1 - 100; % 100 as a safe factor
 disp("k_IF = " + num2str(k_IF) + " Hz");
 
 A_stop1 = 60;                             % Attenuation in the first stopband = 60 dB
-F_pass1 = IF - 0.5*(k_IF + BW_Of_chosen_Signal);              % Edge of the first  passband = fn-0.5*width
-F_pass2 = IF + 0.5*(k_IF + BW_Of_chosen_Signal);              % Edge of the second passband = fn+0.5*width 
-F_stop1 = IF - k_IF;                 % Edge of the first  stopband = (fn-k_RF) [We choosed high k value that filter can use before interacting with another signal as it is not high selective filter and not practical to decrease k]   
+F_pass1 = IF - 0.5*(k_IF + BW_Of_chosen_Signal);      % Edge of the first  passband
+F_pass2 = IF + 0.5*(k_IF + BW_Of_chosen_Signal);      % Edge of the second passband
+F_stop1 = IF - k_IF;                 % Edge of the first  stopband = (IF-k_IF)
 F_stop2 = IF + k_IF;                 % Edge of the second stopband
 A_stop2 = 60;                             % Attenuation in the second stopband = 60 dB
 A_pass = 1;                               % Amount of ripple allowed in the passband = 1 dB
@@ -304,12 +306,13 @@ IF_Signal = filtfilt(b, a, Mixer_Output_Signal);
 IF_SIGNAL  = fftshift(fft(IF_Signal));
 Frequency_vector = (-length(IF_SIGNAL)/2:1:length(IF_SIGNAL)/2-1)';
 
-plot(Frequency_vector*(x*Fs)/length(IF_SIGNAL), abs(IF_SIGNAL))
+plot(Frequency_vector*(x*Fs)/length(IF_SIGNAL), abs(IF_SIGNAL), 'Color', [1, 0.65, 0])
 title("After IF Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
+ylim([0 max(abs(IF_SIGNAL))])
 
-disp("IF_Signal = " + max(abs(IF_Signal)));
+disp("IF_Signal Amplitude = " + max(abs(IF_Signal)));
 
 % Base Band Stage (Demodulation)
 fc = IF; % BaseBand carrier frequency
@@ -321,15 +324,16 @@ Base_Band_Signal = IF_Signal.*carrier_signal;
 BASE_BAND_SIGNAL = fftshift(fft(Base_Band_Signal));
 Frequency_vector = (-length(BASE_BAND_SIGNAL)/2:1:length(BASE_BAND_SIGNAL)/2-1)';
 
-plot(Frequency_vector*(x*Fs)/length(BASE_BAND_SIGNAL), abs(BASE_BAND_SIGNAL))
+plot(Frequency_vector*(x*Fs)/length(BASE_BAND_SIGNAL), abs(BASE_BAND_SIGNAL), 'g')
 title("Demodulator of Base Band Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
+ylim([0 max(abs(BASE_BAND_SIGNAL))])
 
-disp("Base_Band_Signal = " + max(abs(Base_Band_Signal)));
+disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
 
 % The Base Band detection (LPF)
-k2 = 50000 - BW_Of_chosen_Signal; % the largest available frequency range for BaseBand filter to use before interacting with its image.
+k2 = 50000 - BW_Of_chosen_Signal; % the largest available frequency range for BaseBand Low Pass filter to use before interacting with its image.
 k_BB = k2 - 100; %100 as a safe factor.
 disp("k_BB = " + num2str(k_BB) + " Hz");
 
@@ -339,34 +343,37 @@ A_stop = 60;                               % Attenuation in stopband
 A_pass = 1;                                % Amount of ripple allowed in the passband
 
 Base_Band_Filter = fdesign.lowpass(F_pass, F_stop, A_pass, A_stop, (x*Fs));
-Base_Band_Filter = design(Base_Band_Filter, 'kaiserwin'); % [1]Using a lower-order Butterworth filter could provide a good balance between frequency selectivity and phase linearity,[2] provide a maximally flat frequency response in the passband, which means they attenuate frequencies uniformly across the passband without any ripples.
+Base_Band_Filter = design(Base_Band_Filter, 'kaiserwin');
 [b, a] = tf(Base_Band_Filter);
 Base_Band_Signal = filtfilt(b, a, Base_Band_Signal);
 
 BASE_BAND_SIGNAL = fftshift(fft(Base_Band_Signal));
 Frequency_vector = (-length(BASE_BAND_SIGNAL)/2:1:length(BASE_BAND_SIGNAL)/2-1)';
 
-plot(Frequency_vector*(x*Fs)/length(BASE_BAND_SIGNAL), abs(BASE_BAND_SIGNAL))
+plot(Frequency_vector*(x*Fs)/length(BASE_BAND_SIGNAL), abs(BASE_BAND_SIGNAL), 'g')
 title("After Base Band Filter")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
+ylim([0 max(abs(BASE_BAND_SIGNAL))])
 
-disp("Base_Band_Signal = " + max(abs(Base_Band_Signal)));
+disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
 
-Base_Band_Signal = 4*resample(Base_Band_Signal, 1, x); % restore main Fs & length by doing the opposite the interp do & multiplied by x because it divides magnitude by x and multiplied by another 4 due to two modulation processses
+Base_Band_Signal = 4*resample(Base_Band_Signal, 1, x); % resample restores main Fs & length & magnitude by doing the opposite the interp do & multiplied by 4 due to two modulation processses.
 
 BASE_BAND_SIGNAL  = fftshift(fft(Base_Band_Signal));
 Frequency_vector = (-length(BASE_BAND_SIGNAL)/2:1:length(BASE_BAND_SIGNAL)/2-1)';
 
 figure
-plot((Frequency_vector*Fs/length(BASE_BAND_SIGNAL)), abs(BASE_BAND_SIGNAL))
+plot((Frequency_vector*Fs/length(BASE_BAND_SIGNAL)), abs(BASE_BAND_SIGNAL), 'Color', [1, 0.84, 0])
 title("Final result")
 xlabel("Freq (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(BASE_BAND_SIGNAL))])
 
-%Normalize the Base_Band_Signal before saving
-disp("Base_Band_Signal = " + max(abs(Base_Band_Signal)));
+
+disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
+
+%Normalize the Base_Band_Signal amplitude before saving
 %Base_Band_Signal = Base_Band_Signal / max(abs(Base_Band_Signal));  % Normalize to range [-1, 1] because it could potentially has been changed during the code
 
 sound(Base_Band_Signal, Fs) % to listen to our station
