@@ -374,7 +374,7 @@ ylim([0 max(abs(BASE_BAND_SIGNAL))])
 disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
 
 %Normalize the Base_Band_Signal amplitude before saving
-%Base_Band_Signal = Base_Band_Signal / max(abs(Base_Band_Signal));  % Normalize to range [-1, 1] because it could potentially has exceeded it during the code
+Base_Band_Signal = Base_Band_Signal / max(abs(Base_Band_Signal));  % Normalize to range [-1, 1] because it could potentially has exceeded it during the code
 
 sound(Base_Band_Signal, Fs) % to listen to our station
 
