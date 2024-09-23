@@ -284,8 +284,6 @@ if test ~= 1
     ylabel("Magnitude")
     ylim([0 max(abs(RF_SIGNAL))])
     grid on;
-
-    disp("RF_Signal Amplitude = " + max(abs(RF_Signal)));
 end
 
 % Mixer (Oscillator 𝜔𝐶 + 𝜔𝐼f)
