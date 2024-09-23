@@ -50,6 +50,19 @@ for i = 1:length(transmitter_Audios)
     [audio_signal, Fs] = audioread(transmitter_Audios(i)); % Read audio and get sampling frequency
     
     if i == choose_channel
+        
+        nSamples = length(audio_signal);    % Number of samples in the signal
+        t = (0:nSamples-1) / Fs;             % Time vector (in seconds)
+
+        % Plot the signal in the time domain 
+        plot(t, audio_signal);
+        xlabel('Time (seconds)');
+        ylabel('Amplitude');
+        title('Signal in Time Domain');
+        ylim([-1 1])
+        grid on;
+        figure;
+        
         AUDIO_SIGNAL = fftshift(fft(audio_signal, length(audio_signal))); % fftshift to be symmetric around 0 (this way give mathmatical meaning)
         Frequency_vector = (-length(AUDIO_SIGNAL)/2 : length(AUDIO_SIGNAL)/2 - 1)'; % adjust frequency axis (we converted it from row to column by (') because we next will divide it by the AUDIO_SIGNAL array which is a column array and dividing amd multiplying must be in same type)
     
@@ -61,9 +74,9 @@ for i = 1:length(transmitter_Audios)
         xlabel("Freq (Hz)")
         ylabel("Magnitude")
         ylim([0 max(abs(AUDIO_SIGNAL))])
+        grid on;
         
         disp("sampling frequency for all audios = " + Fs + " Hz"); % [1] display sampling freq
-        disp("audio_signal Amplitude = " + max(abs(audio_signal)));
     
         %Fs = 44.1 khz
     end
@@ -81,8 +94,12 @@ for i = 1:length(transmitter_Audios)
     [pks, freqs] = findpeaks(abs(AUDIO_SIGNAL(1:N/2)), F(1:N/2), 'MinPeakHeight', 0.001*max(abs(AUDIO_SIGNAL(1:N/2)))); % save frequencies and corresponding peaks which achieve the threshold(0.001*max) in two different arrays
 
     % Compute bandwidth
-    bandwidth = max(freqs) - min(freqs);
-    disp("bandwidth of " + transmitter_Audios(i) + " = " + bandwidth + " Hz");  %[6] BW
+    full_bandwidth = max(freqs) - min(freqs);
+    effective_bandwidth = obw(audio_signal, Fs);
+    bandwidth = effective_bandwidth;
+    
+    disp("full_bandwidth of " + transmitter_Audios(i) + " = " + full_bandwidth + " Hz");  %[6] BW
+    disp("effective bandwidth of " + transmitter_Audios(i) + " = " + effective_bandwidth + " Hz");
     
     band_widths{i} = bandwidth;
 
@@ -192,15 +209,27 @@ title(transmitter_Audios(choose_channel) + " Modulated")
 xlabel("Freq (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(MODULATED_SIGNAL))])
+grid on;
     
 bandwidth2 = 2 * BW_Of_chosen_Signal;
 disp("bandwidth of " + transmitter_Audios(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
-disp("modulated_signal Amplitude = " + max(abs(modulated_signal)));
 
 % FDM Signal Generation
 for i = 1:length(transmitter_Audios)
     % Read the audio file and obtain the audio data
     [audio_signal, Fs] = audioread(transmitter_Audios(i)); % Read audio and get sampling frequency
+    
+    F_pass = band_widths{i};           % Edge of the passband
+    F_stop = F_pass + 1000;            % Edge of the stopband
+    A_stop = 60;                       % Attenuation in stopband
+    A_pass = 1;                        % Amount of ripple allowed in the passband
+
+    Low_Pass_Filter = fdesign.lowpass(F_pass, F_stop, A_pass, A_stop, Fs);
+    Low_Pass_Filter = design(Low_Pass_Filter, 'kaiserwin');
+    [b, a] = tf(Low_Pass_Filter);
+    
+    audio_signal = filtfilt(b, a, audio_signal);
+    
     audio_signal = interp(audio_signal, x); %
     
     fo = 100000;
@@ -221,6 +250,7 @@ title("FDM Signal")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(FDM_SIGNAL))])
+grid on;
 
 % The RF stage
 fprintf("Choose:\n0. Normal operation\n1. Remove RF Filter\n2. 0.1kHz Offset\n3. 1kHz Offset\n");
@@ -253,6 +283,7 @@ if test ~= 1
     xlabel("Frequency (Hz)")
     ylabel("Magnitude")
     ylim([0 max(abs(RF_SIGNAL))])
+    grid on;
 
     disp("RF_Signal Amplitude = " + max(abs(RF_Signal)));
 end
@@ -281,8 +312,7 @@ title(" After Mixer ")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(MIXER_OUTPUT_SIGNAL))])
-
-disp("Mixer_Output_Signal Amplitude = " + max(abs(Mixer_Output_Signal)));
+grid on;
 
 % IF stage
 
@@ -311,8 +341,7 @@ title("After IF Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(IF_SIGNAL))])
-
-disp("IF_Signal Amplitude = " + max(abs(IF_Signal)));
+grid on;
 
 % Base Band Stage (Demodulation)
 fc = IF; % BaseBand carrier frequency
@@ -329,8 +358,7 @@ title("Demodulator of Base Band Stage")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(BASE_BAND_SIGNAL))])
-
-disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
+grid on;
 
 % The Base Band detection (LPF)
 k2 = 50000 - BW_Of_chosen_Signal; % the largest available frequency range for BaseBand Low Pass filter to use before interacting with its image.
@@ -355,8 +383,7 @@ title("After Base Band Filter")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(BASE_BAND_SIGNAL))])
-
-disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
+grid on;
 
 Base_Band_Signal = 4*resample(Base_Band_Signal, 1, x); % resample restores main Fs & length & magnitude by doing the opposite the interp do & multiplied by 4 due to two modulation processses.
 
@@ -369,14 +396,24 @@ title("Final result")
 xlabel("Freq (Hz)")
 ylabel("Magnitude")
 ylim([0 max(abs(BASE_BAND_SIGNAL))])
+grid on;
+figure
 
-
-disp("Base_Band_Signal Amplitude = " + max(abs(Base_Band_Signal)));
+sound(Base_Band_Signal, Fs) % to listen to our station
 
 %Normalize the Base_Band_Signal amplitude before saving
 Base_Band_Signal = Base_Band_Signal / max(abs(Base_Band_Signal));  % Normalize to range [-1, 1] because it could potentially has exceeded it during the code
 
-sound(Base_Band_Signal, Fs) % to listen to our station
+nSamples = length(Base_Band_Signal); % Number of samples in the signal
+t = (0:nSamples-1) / Fs;             % Time vector (in seconds)
+
+% Plot the signal in the time domain 
+plot(t, Base_Band_Signal);
+xlabel('Time (seconds)');
+ylabel('Amplitude');
+title('received Signal in Time Domain');
+ylim([-1 1])
+grid on;
 
 % --------------------saving received signals & different tests-----------------------------
 errors = ["Removed_RF for " + transmitter_Audios(choose_channel), "0.1 KHz Offset for " + transmitter_Audios(choose_channel), "1 KHz Offset for "+ transmitter_Audios(choose_channel)]; % three tests
