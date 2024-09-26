@@ -59,7 +59,7 @@ for i = 1:length(transmitter_Audios)
         xlabel('Time (seconds)');
         ylabel('Amplitude');
         title('Signal in Time Domain');
-        ylim([-1 1])
+        ylim([-max(abs(audio_signal)) max(abs(audio_signal))])
         grid on;
         figure;
         
@@ -196,30 +196,12 @@ disp("violation_2 = " + num2str(violation_2));
 disp("violation_3 = " + num2str(violation_3));
 disp("x = " + num2str(x));
 
-audio_signal = interp(audio_signal, x); %[8] Fs(new)= x*Fs & length(new) = x*length & magnitude(new) = x*magnitude
-audio_length = (1:1:length(audio_signal))'; % adjusted to be the same length as our signal
-carrier_signal = cos(2*pi*fn_chosen*audio_length*(1/(x*Fs))); % [7] carrier signal cos(𝜔𝑛𝑛𝑇𝑆)
-
-modulated_signal = carrier_signal.*audio_signal; % we use (.*) when multiplying arrays
-MODULATED_SIGNAL = fftshift(fft(modulated_signal));
-Frequency_vector = (-length(MODULATED_SIGNAL)/2:1:length(MODULATED_SIGNAL)/2-1)';
-
-plot(Frequency_vector*(x*Fs)/length(MODULATED_SIGNAL), abs(MODULATED_SIGNAL), 'Color', [0.6, 0.4, 0.1])    
-title(transmitter_Audios(choose_channel) + " Modulated")
-xlabel("Freq (Hz)")
-ylabel("Magnitude")
-ylim([0 max(abs(MODULATED_SIGNAL))])
-grid on;
-    
-bandwidth2 = 2 * BW_Of_chosen_Signal;
-disp("bandwidth of " + transmitter_Audios(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
-
 % FDM Signal Generation
 for i = 1:length(transmitter_Audios)
     % Read the audio file and obtain the audio data
     [audio_signal, Fs] = audioread(transmitter_Audios(i)); % Read audio and get sampling frequency
-    
-    F_pass = band_widths{i};           % Edge of the passband
+    % Low pass filter to remove high frequency noisy componet ( keep only 99% of our input signal power).
+    F_pass = band_widths{i};           % Edge of the passband - effective Bandwidth -
     F_stop = F_pass + 1000;            % Edge of the stopband
     A_stop = 60;                       % Attenuation in stopband
     A_pass = 1;                        % Amount of ripple allowed in the passband
@@ -230,17 +212,61 @@ for i = 1:length(transmitter_Audios)
     
     audio_signal = filtfilt(b, a, audio_signal);
     
-    audio_signal = interp(audio_signal, x); %
+    if i == choose_channel
+        
+        nSamples = length(audio_signal);    % Number of samples in the signal
+        t = (0:nSamples-1) / Fs;             % Time vector (in seconds)
+
+        % Plot the Filtered signal in the time domain 
+        plot(t, audio_signal);
+        xlabel('Time (seconds)');
+        ylabel('Amplitude');
+        title('Filtered Signal in Time Domain');
+        ylim([-max(abs(audio_signal)) max(abs(audio_signal))])
+        grid on;
+        figure;
+        
+        AUDIO_SIGNAL = fftshift(fft(audio_signal, length(audio_signal))); % fftshift to be symmetric around 0 (this way give mathmatical meaning)
+        Frequency_vector = (-length(AUDIO_SIGNAL)/2 : length(AUDIO_SIGNAL)/2 - 1)'; % adjust frequency axis (we converted it from row to column by (') because we next will divide it by the AUDIO_SIGNAL array which is a column array and dividing amd multiplying must be in same type)
+    
+        F = Frequency_vector*Fs/length(AUDIO_SIGNAL); % [4]Freq axis
+        % freq limits [-Fs/2 ---> Fs/2]  exceeding this range will lead higher frequencies to fold back 
+
+        plot(F, abs(AUDIO_SIGNAL), 'Color', [1, 0.84, 0]) % [5] plotting FFT
+        title("Filtered" +transmitter_Audios(choose_channel) + " FFT")
+        xlabel("Freq (Hz)")
+        ylabel("Magnitude")
+        ylim([0 max(abs(AUDIO_SIGNAL))])
+        grid on;
+        figure;
+    end
+    audio_signal = interp(audio_signal, x); %[8] Fs(new)= x*Fs & length(new) = x*length & magnitude(new) = x*magnitude
     
     fo = 100000;
     n = (i-1);
     delta_f = 50000;
     fn = fo + n*delta_f;
                  
-    audio_length = (1:1:length(audio_signal))';
-    carrier_signal = cos(2*pi*fn*audio_length*(1/(x*Fs))); % [7] carrier signal
+    audio_length = (1:1:length(audio_signal))'; % adjusted to be the same length as our signal
+    carrier_signal = cos(2*pi*fn*audio_length*(1/(x*Fs))); % [7] carrier signal cos(𝜔𝑛𝑛𝑇𝑆)
    
-    modulated_signal = carrier_signal.*audio_signal;
+    modulated_signal = carrier_signal.*audio_signal; % we use (.*) when multiplying arrays
+    MODULATED_SIGNAL = fftshift(fft(modulated_signal));
+    Frequency_vector = (-length(MODULATED_SIGNAL)/2:1:length(MODULATED_SIGNAL)/2-1)';
+
+    if i == choose_channel
+
+        plot(Frequency_vector*(x*Fs)/length(MODULATED_SIGNAL), abs(MODULATED_SIGNAL), 'Color', [0.6, 0.4, 0.1])    
+        title(transmitter_Audios(choose_channel) + " Modulated")
+        xlabel("Freq (Hz)")
+        ylabel("Magnitude")
+        ylim([0 max(abs(MODULATED_SIGNAL))])
+        grid on;
+        figure;
+    
+        bandwidth2 = 2 * BW_Of_chosen_Signal;
+        disp("bandwidth of " + transmitter_Audios(choose_channel) + " Modulated = " + bandwidth2 + " Hz");
+    end
     FDM_Signal = FDM_Signal + modulated_signal; % summing point 
 end
 FDM_SIGNAL = fftshift(fft(FDM_Signal));
@@ -262,7 +288,7 @@ test = input("0. Normal operation\n1. Remove RF Filter\n2. 0.1kHz Offset\n3. 1kH
 
 if test ~= 1
     A_stop1 = 60; % Attenuation in the first stopband = 60 dB
-    F_pass1 = fn_chosen - 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the first  passband, just suitable equation
+    F_pass1 = fn_chosen - 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the first  passband, just suitable equation to make sure that we will not exceed our limits under any condition.
     F_pass2 = fn_chosen + 0.5*(k_RF + BW_Of_chosen_Signal);     % Edge of the second passband 
     F_stop1 = fn_chosen - k_RF;                  % Edge of the first  stopband = (fn-k_RF) 
     F_stop2 = fn_chosen + k_RF;                  % Edge of the second stopband = (fn+k_RF) making it symmetric is better
@@ -410,7 +436,7 @@ plot(t, Base_Band_Signal);
 xlabel('Time (seconds)');
 ylabel('Amplitude');
 title('received Signal in Time Domain');
-ylim([-1 1])
+ylim([-max(abs(Base_Band_Signal)) max(abs(Base_Band_Signal))])
 grid on;
 
 % --------------------saving received signals & different tests-----------------------------
@@ -422,4 +448,3 @@ if test == 1 || test == 2 || test == 3
 else
     audiowrite(receiver{choose_channel}, Base_Band_Signal, Fs);
 end
-
