@@ -8,8 +8,18 @@
    * by running code, user required to choose which station he wants to hear & asked if he wants to do one of this tests (remove RF stage - 0.1K hz offset - 1k hz offset )
 
 
-> ## __OutPut__
-![image](https://github.com/user-attachments/assets/b152c95c-f434-4f0b-a564-7560a4f79d64)
+> ## __INPUT__
+![image](https://github.com/user-attachments/assets/08f4b028-cf10-42f7-b23d-716a4aad26e6)
+> ## __OUTPUT__
+Choose one of these channels:
+1. Short_BBCArabic2
+2. Short_FM9090
+3. Short_QuranPalestine
+4. Short_RussianVoice
+5. Short_SkyNewsArabia
+
+
+
 
 
 
