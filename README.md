@@ -7,40 +7,23 @@
 > ## __Run Program__
    * by running code, user required to choose which station he wants to hear & asked if he wants to do one of this tests (remove RF stage - 0.1K hz offset - 1k hz offset )
 
-
 > ## __INPUT__
 ![image](https://github.com/user-attachments/assets/08f4b028-cf10-42f7-b23d-716a4aad26e6)
+
 > ## __OUTPUT__
 ![image](https://github.com/user-attachments/assets/91b0236e-9f38-412e-a4e1-08894a65df7e)
 
 ![image](https://github.com/user-attachments/assets/1f7533e4-88c1-47ed-8c7e-c7772bbe2f0f)
 
-![image](https://github.com/user-attachments/assets/b7555711-36c4-4f77-8376-cd2ac9b87aa9)
+![image](https://github.com/user-attachments/assets/04a665a3-7bf5-4fae-8273-2e1115155f77)
 
+![image](https://github.com/user-attachments/assets/a0b1c296-4765-47df-a26c-dfaac520818c)
 
+![image](https://github.com/user-attachments/assets/85f7c9ed-e78a-4a0a-8b2a-b1b0c8195533)
 
-![image](https://github.com/user-attachments/assets/4c8c9d40-c701-4dc3-99aa-163833cf06b0)
-![image](https://github.com/user-attachments/assets/850344c0-806d-4a49-8064-295fda376361)
-![image](https://github.com/user-attachments/assets/6197cdf9-d2cb-4fa5-87e9-c118834dc978)
-![image](https://github.com/user-attachments/assets/e1e760f1-0c2b-4229-b204-a1851f0a94fa)
-![image](https://github.com/user-attachments/assets/f63c092b-a30b-45b4-8604-f5227edf8157)
+![image](https://github.com/user-attachments/assets/951bbde5-3965-4052-ae75-a84a8c4922ae)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+![image](https://github.com/user-attachments/assets/d3d044d8-6846-461c-98b4-7e6eef54e54d)
 
 > ## _appreciation_
 thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first place for their code that helped me much in some parts.
@@ -48,4 +31,3 @@ thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first pl
 their project :  https://github.com/0marAmr/Super-heterodyne-Receiver/tree/master
 
 my code is extremely changed : new functions added, many concepts clarified and many issues fixed.
-
