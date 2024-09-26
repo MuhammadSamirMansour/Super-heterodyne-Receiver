@@ -7,6 +7,14 @@
 > ## __Run Program__
    * by running code, user required to choose which station he wants to hear & asked if he wants to do one of this tests (remove RF stage - 0.1K hz offset - 1k hz offset )
 
+
+> ## __OutPut__
+![image](https://github.com/user-attachments/assets/b152c95c-f434-4f0b-a564-7560a4f79d64)
+
+
+
+
+
 > ## _appreciation_
 thanx to ( Omr Amr Mahmoud Hafez & Mohamed Khaled Mohamed Alahmady ) in first place for their code that helped me much in some parts.
 
